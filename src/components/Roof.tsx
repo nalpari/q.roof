@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Layer, Rect, Stage, Transformer } from 'react-konva'
+import { Layer, Line, Rect, Stage, Transformer } from 'react-konva'
 
 const Rectshape = ({ shapeProps, isSelected, onSelect, onChange }: any) => {
   const shapeRef = useRef() as React.MutableRefObject<any>
@@ -15,40 +15,58 @@ const Rectshape = ({ shapeProps, isSelected, onSelect, onChange }: any) => {
 
   return (
     <>
-      <Rect
-        onClick={onSelect}
-        onTap={onSelect}
-        ref={shapeRef}
-        {...shapeProps}
-        draggable
-        onDragEnd={(e) => {
-          onChange({
-            ...shapeProps,
-            x: e.target.x(),
-            y: e.target.y(),
-          })
-        }}
-        onTransformEnd={(e) => {
-          // transformer is changing scale of the node
-          // and NOT its width or height
-          // but in the store we have only width and height
-          // to match the data better we will reset scale on transform end
-          const node = shapeRef.current
-          const scaleX = node.scaleX()
-          const scaleY = node.scaleY()
+      {shapeProps.format === 'rectangle' && (
+        <Rect
+          onClick={onSelect}
+          onTap={onSelect}
+          ref={shapeRef}
+          {...shapeProps}
+          draggable
+          onDragEnd={(e) => {
+            onChange({
+              ...shapeProps,
+              x: e.target.x(),
+              y: e.target.y(),
+            })
+          }}
+          onTransformEnd={(e) => {
+            // transformer is changing scale of the node
+            // and NOT its width or height
+            // but in the store we have only width and height
+            // to match the data better we will reset scale on transform end
+            const node = shapeRef.current
+            const scaleX = node.scaleX()
+            const scaleY = node.scaleY()
 
-          // we will reset it back
-          node.scaleX(1)
-          node.scaleY(1)
-          onChange({
-            ...shapeProps,
-            x: node.x(),
-            y: node.y(),
-            width: Math.max(node.width() * scaleX),
-            height: Math.max(node.height() * scaleY),
-          })
-        }}
-      />
+            // we will reset it back
+            node.scaleX(1)
+            node.scaleY(1)
+            onChange({
+              ...shapeProps,
+              x: node.x(),
+              y: node.y(),
+              width: Math.max(node.width() * scaleX),
+              height: Math.max(node.height() * scaleY),
+            })
+          }}
+        />
+      )}
+      {shapeProps.format === 'line' && (
+        <Line
+          {...shapeProps}
+          onClick={onSelect}
+          onTap={onSelect}
+          ref={shapeRef}
+          draggable
+          onDragEnd={(e) => {
+            onChange({
+              ...shapeProps,
+              x: e.target.x(),
+              y: e.target.y(),
+            })
+          }}
+        />
+      )}
       {isSelected && (
         <Transformer
           ref={trRef}
@@ -98,11 +116,13 @@ const Rectshape = ({ shapeProps, isSelected, onSelect, onChange }: any) => {
 // ]
 
 interface IShape {
+  format: string
   x: number
   y: number
-  width: number
-  height: number
-  fill: string
+  width?: number
+  height?: number
+  fill?: string
+  points?: number[]
   stroke: string
   id: string
 }
